@@ -1,0 +1,14 @@
+node_modules/
+.DS_Store
+pdf_slides/
+*.mp4
+*.mp3
+*.srt
+WB song/
+Gemini_Generated_Image_*.png
+截屏*.png
+create_ppt.js
+package.json
+package-lock.json
+蜗牛AI路演*.pdf
+蜗牛AI路演*.pptx
