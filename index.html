@@ -23,7 +23,7 @@
 * html,body{width:100%;overflow-x:hidden;background:var(--paper);color:var(--ink);font-family:var(--sans);font-weight:400;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
 .deck{width:100%;counter-reset:slide-num}
 .slide{position:relative;min-height:100vh;opacity:1;pointer-events:auto;counter-increment:slide-num;scroll-margin-top:0}
-.slide::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent) 0%,var(--accent-2) 50%,var(--accent) 100%);opacity:.7;z-index:50}
+.slide::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,var(--accent) 30%,var(--accent-2) 50%,var(--accent) 70%,transparent 100%);opacity:.5;z-index:50}
 .slide.active{opacity:1;pointer-events:auto}
 .slide::after{content:counter(slide-num);position:absolute;right:40px;top:28px;z-index:999;font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(--ink-3);pointer-events:none;font-weight:600;font-variant-numeric:tabular-nums}
 .slide.theme-dark::after{color:rgba(250,250,247,.5)}
