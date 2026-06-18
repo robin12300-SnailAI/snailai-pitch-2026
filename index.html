@@ -1065,30 +1065,50 @@
 
   <!-- ========== 33 · 报名海报 ========== -->
   <section class="slide theme-light" data-n="33">
-    <div style="display:grid;grid-template-rows:auto 1fr;padding:48px 56px 72px;min-height:100vh">
+    <div style="display:grid;grid-template-rows:auto 1fr auto;padding:32px 32px 40px;min-height:100vh">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <span class="kicker">报名海报</span>
         <span class="t-meta">Enrollment</span>
       </div>
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;width:100%">
-        <h1 class="h-xl" style="color:var(--ink);text-align:center">第一期课程 <span style="color:var(--accent)">报名海报</span></h1>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;width:100%;max-width:770px;align-items:start">
-          <div style="background:#fff;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.12);overflow:hidden;border:1px solid var(--ink-2)">
-            <img src="images/poster_online.jpg" loading="lazy" decoding="async" alt="线上班报名海报" style="width:100%;height:auto;display:block">
-            <div style="text-align:center;padding:14px;background:var(--paper-2)">
-              <span class="t-cat">线上班 · CLASS A</span>
-              <div class="body" style="margin-top:4px;color:var(--ink-3)">每周二晚直播 + 周六北悉尼线下</div>
-            </div>
+      <div style="display:grid;grid-template-columns:auto 1fr auto 1fr auto;gap:18px;align-items:center;width:100%;max-width:1280px;margin:0 auto">
+        <!-- 左侧支付二维码：线上班 -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+          <div style="background:#fff;padding:10px;border-radius:12px;border:2px solid var(--ink);box-shadow:0 6px 20px rgba(0,0,0,.12)">
+            <img src="images/qr_pay_online.png" loading="lazy" decoding="async" alt="线上支付二维码" style="width:150px;height:150px;object-fit:contain;display:block">
           </div>
-          <div style="background:#fff;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.12);overflow:hidden;border:1px solid var(--ink-2)">
-            <img src="images/poster_offline.jpg" loading="lazy" decoding="async" alt="线下班报名海报" style="width:100%;height:auto;display:block">
-            <div style="text-align:center;padding:14px;background:var(--paper-2)">
-              <span class="t-cat">线下+线上班 · CLASS B</span>
-              <div class="body" style="margin-top:4px;color:var(--ink-3)">周六北悉尼 + 每周二线上</div>
-            </div>
+          <div style="text-align:center">
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);font-weight:700">Pay Online</div>
+            <div style="font-size:13px;font-weight:700;color:var(--ink);margin-top:2px">线上支付</div>
+            <div style="font-size:10px;color:var(--ink-3);margin-top:2px;font-family:var(--mono);letter-spacing:.06em">CLASS A · $599</div>
+          </div>
+        </div>
+
+        <!-- 中间左侧海报：线上班 -->
+        <div style="background:#fff;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.12);overflow:hidden;border:1px solid var(--ink-2)">
+          <img src="images/poster_online.jpg" loading="lazy" decoding="async" alt="线上班报名海报" style="width:100%;height:auto;display:block">
+        </div>
+
+        <!-- 中间分隔 -->
+        <div style="width:1px;height:60%;background:var(--ink-2);opacity:.3"></div>
+
+        <!-- 中间右侧海报：线下班 -->
+        <div style="background:#fff;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.12);overflow:hidden;border:1px solid var(--ink-2)">
+          <img src="images/poster_offline.jpg" loading="lazy" decoding="async" alt="线下班报名海报" style="width:100%;height:auto;display:block">
+        </div>
+
+        <!-- 右侧支付二维码：线下班 -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+          <div style="background:#fff;padding:10px;border-radius:12px;border:2px solid var(--accent);box-shadow:0 6px 20px rgba(255,91,31,.18)">
+            <img src="images/qr_pay_offline.png" loading="lazy" decoding="async" alt="线下支付二维码" style="width:150px;height:150px;object-fit:contain;display:block">
+          </div>
+          <div style="text-align:center">
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);font-weight:700">Pay Offline</div>
+            <div style="font-size:13px;font-weight:700;color:var(--ink);margin-top:2px">线下支付</div>
+            <div style="font-size:10px;color:var(--accent);margin-top:2px;font-family:var(--mono);letter-spacing:.06em;font-weight:700">CLASS B · $999</div>
           </div>
         </div>
       </div>
+      <h1 class="h-md" style="color:var(--ink);text-align:center;margin-top:14px">第一期课程 <span style="color:var(--accent)">报名海报</span></h1>
     </div>
   </section>
 
