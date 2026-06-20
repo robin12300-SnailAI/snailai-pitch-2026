@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Zoom MCP 接入完整流程 · 蜗牛AI</title>
+<style>
+:root{
+  --ink:#0E0E10;--ink-2:#1A1A1E;--ink-3:#5A5A65;
+  --paper:#FAFAF7;--paper-2:#F0EFEA;--paper-3:#E5E4DD;
+  --accent:#FF5B1F;--accent-2:#E84A0F;
+  --green:#2DA44E;--red:#CF222E;--blue:#0969DA;
+  --line:rgba(14,14,16,.12);
+  --shadow-sm:0 1px 2px rgba(14,14,16,.04),0 2px 8px rgba(14,14,16,.04);
+  --shadow-md:0 2px 4px rgba(14,14,16,.06),0 8px 24px rgba(14,14,16,.06);
+  --shadow-lg:0 4px 12px rgba(14,14,16,.08),0 20px 48px rgba(14,14,16,.10);
+  --r-sm:6px;--r-md:10px;--r-lg:16px;--r-xl:24px;
+  --sans:'Inter','Helvetica Neue','Helvetica','Arial','PingFang SC','Microsoft YaHei UI','Noto Sans SC',sans-serif;
+  --mono:'JetBrains Mono','SF Mono','Menlo','Consolas',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+
+/* Header */
+.header{position:sticky;top:0;z-index:100;background:rgba(250,250,247,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:20px 40px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:18px;font-weight:700;color:var(--ink)}
+.header .meta{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.header a{color:var(--accent);text-decoration:none;font-weight:600}
+
+/* Timeline */
+.timeline{max-width:1100px;margin:60px auto;padding:0 24px 120px;position:relative}
+.timeline::before{content:'';position:absolute;left:32px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--accent) 0%,var(--paper-3) 80%,transparent 100%)}
+
+.item{display:flex;gap:32px;margin-bottom:64px;position:relative;align-items:flex-start}
+.item:last-child{margin-bottom:0}
+
+/* Dot + Time */
+.item-dot{flex-shrink:0;width:66px;display:flex;flex-direction:column;align-items:center;padding-top:6px}
+.dot{width:14px;height:14px;border-radius:50%;background:var(--accent);border:3px solid var(--paper);box-shadow:0 0 0 2px var(--accent),var(--shadow-sm);z-index:2;position:relative}
+.dot.success{background:var(--green);box-shadow:0 0 0 2px var(--green),var(--shadow-sm)}
+.dot.error{background:var(--red);box-shadow:0 0 0 2px var(--red),var(--shadow-sm)}
+.time{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:8px;white-space:nowrap;font-weight:600;letter-spacing:.04em}
+
+/* Card */
+.card{flex:1;background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-md);transition:transform .25s ease, box-shadow .25s ease}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.card-img{width:100%;aspect-ratio:16/10;object-fit:contain;background:#1a1a1e;border-bottom:1px solid var(--line);padding:12px}
+.card-body{padding:20px 24px}
+.card-step{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:8px}
+.card-title{font-size:17px;font-weight:700;color:var(--ink);margin-bottom:6px;line-height:1.3}
+.card-desc{font-size:13.5px;color:var(--ink-3);line-height:1.55}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;margin-right:6px;margin-top:10px}
+.tag-info{background:#ddf4ff;color:var(--blue);border:1px solid #a8daff}
+.tag-warn{background:#fff8c5;color:#946c00;border:1px solid #e3c868}
+.tag-ok{background:#dafbe1;color:#1a7f37;border:1px solid #a0d9b0}
+.tag-err{background:#ffebe9;color:#cf222e;border:1px solid #fda0a0}
+
+/* Nav */
+.nav{max-width:1100px;margin:0 auto 40px;padding:0 24px;display:flex;gap:12px;flex-wrap:wrap}
+.nav a{padding:8px 18px;border-radius:99px;font-size:13px;font-weight:600;text-decoration:none;border:1px solid var(--line);color:var(--ink-2);transition:all .2s}
+.nav a:hover,.nav a.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* Section title */
+.section-title{text-align:center;margin:80px auto 48px;position:relative}
+.section-title h2{font-size:32px;font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.section-title p{font-size:15px;color:var(--ink-3);margin-top:8px}
+.section-title::after{content:'';display:block;width:48px;height:3px;background:var(--accent);border-radius:2px;margin:16px auto 0}
+
+/* Image grid for folder images */
+.gallery-grid{max-width:1200px;margin:0 auto 80px;padding:0 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+.gallery-item{border-radius:var(--r-md);overflow:hidden;border:1px solid var(--line);background:var(--paper);box-shadow:var(--shadow-sm);transition:all .25s ease;cursor:pointer}
+.gallery-item:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.gallery-item img{width:100%;aspect-ratio:4/3;object-fit:contain;background:#1a1a1e;padding:8px}
+.gallery-item .caption{padding:12px 14px;font-size:12.5px;color:var(--ink-3);border-top:1px solid var(--line);font-weight:500}
+
+/* Lightbox */
+.lightbox{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);align-items:center;justify-content:center;cursor:zoom-out;padding:40px}
+.lightbox.show{display:flex}
+.lightbox img{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:var(--r-md);box-shadow:0 0 60px rgba(0,0,0,.5)}
+.lightbox .lb-caption{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);color:#fff;font-size:14px;font-weight:600;background:rgba(0,0,0,.6);padding:8px 20px;border-radius:99px}
+
+/* Footer */
+.footer{text-align:center;padding:40px 24px;color:var(--ink-3);font-size:13px;border-top:1px solid var(--line);margin-top:60px}
+.footer a{color:var(--accent);text-decoration:none}
+
+@media(max-width:640px){
+  .timeline::before{left:20px}
+  .item-dot{width:44px}
+  .dot{width:10px;height:10px}
+  .time{font-size:9px}
+  .item{gap:16px;margin-bottom:40px}
+  .card-body{padding:14px 16px}
+  .card-title{font-size:15px}
+  .header{padding:16px 20px}
+  .gallery-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>🐌 蜗牛AI · Zoom MCP 接入全记录</h1>
+    <div class="meta">2026-06-18 · 完整时间线 · 共 <strong>7</strong> 个步骤</div>
+  </div>
+  <a href="index.html">← 返回路演主页</a>
+</div>
+
+<!-- Navigation -->
+<div class="nav" id="nav">
+  <a href="#step1" class="active">① Token</a>
+  <a href="#step2">② MCP 报错</a>
+  <a href="#step3">③ 创建 App</a>
+  <a href="#step4">④ 激活 App</a>
+  <a href="#step5">⑤ 配置权限</a>
+  <a href="#step6">⑥ 连接成功</a>
+  <a href="#step7">⑦ PMI 设置</a>
+  <a href="#gallery" style="border-color:var(--accent);color:var(--accent)">📷 全部素材</a>
+</div>
+
+<div class="section-title">
+  <h2>Zoom MCP 集成时间线</h2>
+  <p>从获取 Token 到最终完成 PMI 个人会议室配置的完整过程</p>
+</div>
+
+<!-- Timeline -->
+<div class="timeline">
+
+  <!-- Step 1 -->
+  <div class="item" id="step1">
+    <div class="item-dot"><div class="dot"></div><div class="time">09:26</div></div>
+    <div class="card">
+      <img src="images/screenshot_01_token.png" alt="Token" class="card-img" loading="lazy">
+      <div class="card-body">
+        <div class="card-step">Step 01 / 07</div>
+        <div class="card-title">🔑 获取 Zoom Secret Token</div>
+        <div class="card-desc">在 Zoom Marketplace 开发者后台获取 Secret Token，用于验证 Zoom 发送的事件通知。这是整个集成流程的第一步。</div>
+        <span class="tag tag-info">Zoom Marketplace</span>
+        <span class="tag tag-info">Server-to-Server OAuth</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="item" id="step2">
+    <div class="item-dot"><div class="dot error"></div><div class="time">21:33</div></div>
+    <div class="card">
+      <img src="images/screenshot_02_mcp_error.png" alt="MCP Error" class="card-img" loading="lazy">
+      <div class="card-body">
+        <div class="card-step">Step 02 / 07</div>
+        <div class="card-title">❌ MCP 连接报错</div>
+        <div class="card-desc">WorkBuddy 中配置 Zoom MCP 服务后出现 <code style="background:var(--paper-2);padding:1px 6px;border-radius:4px;font-size:12px">MCP error -32000: Connection closed</code> 错误，连接被关闭。需要排查原因。</div>
+        <span class="tag tag-err">Connection Error</span>
+        <span class="tag tag-warn">需排查</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="item" id="step3">
+    <div class="item-dot"><div class="dot"></div><div class="time">21:46</div></div>
+    <div class="card">
+      <img src="images/screenshot_03_created_apps.png" alt="Created Apps" class="card-img" loading="lazy">
+      <div class="card-body">
+        <div class="card-step">Step 03 / 07</div>
+        <div class="card-title">📦 创建 KSI-WorkBuddy App</div>
+        <div class="card-desc">在 Zoom App Marketplace 的「Personal app management → Created apps」中创建 <strong>KSI-Workbuddy-app</strong>，类型为 Server-To-Server OAuth，状态初始为 Deactivated。</div>
+        <span class="tag tag-info">App Created</span>
+        <span class="tag tag-warn">Deactivated</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="item" id="step4">
+    <div class="item-dot"><div class="dot success"></div><div class="time">22:00</div></div>
+    <div class="card">
+      <img src="images/screenshot_04_app_activation.png" alt="Activation" class="card-img" loading="lazy">
+      <div class="card-body">
+        <div class="card-step">Step 04 / 07</div>
+        <div class="card-title">✅ App 激活成功</div>
+        <div class="card-desc">完成 App Credentials、Information、Feature、Scopes 配置后，在 Activation 页面激活应用。系统提示：<strong>"Your app is activated on the account"</strong>，可以调用选定的 Zoom API 了。</div>
+        <span class="tag tag-ok">Activated ✓</span>
+        <span class="tag tag-ok">Ready to Invoke APIs</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5 -->
+  <div class="item" id="step5">
+    <div class="item-dot"><div class="dot success"></div><div class="time">22:01</div></div>
+    <div class="card">
+      <img src="images/screenshot_05_marketplace_scopes.png" alt="Scopes" class="card-img" loading="lazy">
+      <div class="card-body">
+        <div class="card-step">Step 05 / 07</div>
+        <div class="card-title">🔐 配置 API 权限范围 (Scopes)</div>
+        <div class="card-desc">配置 Meetings 相关 API 权限：添加注册人 (registrant)、TSP 账号、开放应用、设备、网络研讨会嘉宾等全部所需 Scopes。</div>
+        <span class="tag tag-ok">Scopes Configured</span>
+        <span class="tag tag-info">Meetings / Webinar / Device</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 6 -->
+  <div class="item" id="step6">
+    <div class="item-dot"><div class="dot success"></div><div class="time">22:03</div></div>
+    <div class="card">
+      <img src="images/screenshot_06_mcp_zoom_connected.png" alt="MCP Connected" class="card-img" loading="lazy">
+      <div class="card-body">
+        <div class="card-step">Step 06 / 07</div>
+        <div class="card-title">🔗 MCP 服务连接成功</div>
+        <div class="card-desc">回到 WorkBuddy 的「MCP 服务管理」，Zoom 工具已显示绿色开关（已启用），共加载 <strong>14/14 个工具</strong> 全部可用，包括 meetings、recordings、chat_messages 等。</div>
+        <span class="tag tag-ok">Connected ✓</span>
+        <span class="tag tag-ok">14/14 Tools Active</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 7 -->
+  <div class="item" id="step7">
+    <div class="item-dot"><div class="dot success"></div><div class="time">22:21</div></div>
+    <div class="card">
+      <img src="images/screenshot_07_pmi_setup.png" alt="PMI Setup" class="card-img" loading="lazy">
+      <div class="card-body">
+        <div class="card-step">Step 07 / 07</div>
+        <div class="card-title">🏠 PMI 个人会议室设置</div>
+        <div class="card-desc">最终确认个人会议室 (PMI) 配置：PMI 号码 <strong>5432112300</strong>，链接已启用，账号 ID 和账号号码均正常显示。整个 Zoom MCP 集成流程完成 ✅</div>
+        <span class="tag tag-ok">PMI Enabled ✓</span>
+        <span class="tag tag-ok">All Done</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Gallery of all images in folder -->
+<div class="section-title" id="gallery">
+  <h2>📷 项目素材库</h2>
+  <p>蜗牛 AI 路演项目 images 文件夹中的所有素材</p>
+</div>
+
+<div class="gallery-grid" id="galleryGrid">
+<!-- Dynamically populated -->
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('show')">
+  <img id="lightboxImg" src="" alt="">
+  <div class="lb-caption" id="lightboxCaption"></div>
+</div>
+
+<div class="footer">
+  <p>🐌 <strong>蜗牛AI</strong> · 澳洲华人AI应用私享会 · 2026-06-20</p>
+  <p style="margin-top:8px"><a href="https://github.com/robin12300-SnailAI/snailai-pitch-2026" target="_blank">GitHub 仓库</a> · <a href="index.html">返回路演主页</a></p>
+</div>
+
+<script>
+// Gallery data - all files in images folder with timestamps
+const galleryItems = [
+  { file: 'ksi_logo.png', name: 'KSI Logo', date: 'Jun 15' },
+  { file: 'snailai_logo.png', name: '蜗牛AI Logo', date: 'Jun 14' },
+  { file: 'robin_photo.jpg', name: 'Robin 照片', date: 'Jun 14' },
+  { file: 'michael_guo.jpg', name: 'Michael Guo 照片', date: 'Jun 15' },
+  { file: '早期图.JPG', name: '早期概念图', date: 'Jun 14' },
+  { file: 'AI进化路径.jpg', name: 'AI 进化路径', date: 'Jun 14' },
+  { file: 'AI顿悟.jpg', name: 'AI 顿悟', date: 'Jun 14' },
+  { file: '焦虑图1.JPG', name: '焦虑图 1', date: 'Jun 14' },
+  { file: '焦虑图2.JPG', name: '焦虑图 2', date: 'Jun 14' },
+  { file: '学习什么.jpg', name: '学什么', date: 'Jun 14' },
+  { file: '学习模式对比.jpg', name: '学习模式对比', date: 'Jun 14' },
+  { file: '输出式学习.jpg', name: '输出式学习', date: 'Jun 14' },
+  { file: 'image1.jpg', name: '素材图 1', date: 'Jun 14' },
+  { file: 'image2.png', name: '素材图 2', date: 'Jun 14' },
+  { file: 'image3.jpg', name: '素材图 3', date: 'Jun 14' },
+  { file: 'image4.jpg', name: '素材图 4', date: 'Jun 14' },
+  { file: 'image5.jpg', name: '素材图 5', date: 'Jun 14' },
+  { file: 'image6.jpg', name: '素材图 6', date: 'Jun 14' },
+  { file: 'image7.png', name: '素材图 7', date: 'Jun 14' },
+  { file: 'wechat_qr.jpg', name: '微信二维码', date: 'Jun 14' },
+  { file: 'wechat_qr_new.png', name: '微信二维码(新)', date: 'Jun 15' },
+  { file: 'qr_ai_need.png', name: 'AI需求调研 QR', date: 'Jun 15' },
+  { file: 'qr_live_event.JPG', name: '活动直播 QR', date: 'Jun 15' },
+  { file: 'qr_live_event_new.JPG', name: '活动直播 QR(新)', date: 'Jun 15' },
+  { file: 'qr_live_event_v2.png', name: '活动直播 QR v2', date: 'Jun 15' },
+  { file: 'qr_live_event_v3.png', name: '活动直播 QR v3', date: 'Jun 15' },
+  { file: 'qr_live_event_v4.png', name: '活动直播 QR v4', date: 'Jun 19' },
+  { file: 'qr_offline_class.JPG', name: '线下班 QR', date: 'Jun 15' },
+  { file: 'qr_offline_class_new.png', name: '线下班 QR(新)', date: 'Jun 15' },
+  { file: 'qr_offline_class_v2.png', name: '线下班 QR v2', date: 'Jun 15' },
+  { file: 'qr_online_class.JPG', name: '线上班 QR', date: 'Jun 15' },
+  { file: 'qr_online_class_new.png', name: '线上班 QR(新)', date: 'Jun 15' },
+  { file: 'qr_online_class_v2.png', name: '线上班 QR v2', date: 'Jun 15' },
+  { file: 'qr_pay_offline.png', name: '线下支付 QR', date: 'Jun 18' },
+  { file: 'qr_pay_online.png', name: '线上支付 QR', date: 'Jun 18' },
+  { file: 'qr_jiangpei.png', name: '奖配 QR', date: 'Jun 18' },
+  { file: 'qr_wuqing.png', name: '吴庆 QR', date: 'Jun 18' },
+  { file: 'qr_xiejin.png', name: '谢进 QR', date: 'Jun 18' },
+  { file: 'qr_michael.jpg', name: 'Michael QR', date: 'Jun 16' },
+  { file: 'qr_robin.JPG', name: 'Robin QR', date: 'Jun 16' },
+  { file: 'qr_class_a_v3.png', name: 'A类课程 QR v3', date: 'Jun 19' },
+  { file: 'qr_class_b_v3.png', name: 'B类课程 QR v3', date: 'Jun 19' },
+  { file: 'poster_offline.jpg', name: '海报(线下)', date: 'Jun 16' },
+  { file: 'poster_online.jpg', name: '海报(线上)', date: 'Jun 16' },
+  { file: 'old_system_1.png', name: '旧系统截图 1', date: 'Jun 18' },
+  { file: 'old_system_2.png', name: '旧系统截图 2', date: 'Jun 18' },
+];
+
+const grid = document.getElementById('galleryGrid');
+galleryItems.forEach(item => {
+  const div = document.createElement('div');
+  div.className = 'gallery-item';
+  div.innerHTML = `<img src="images/${item.file}" alt="${item.name}" loading="lazy"><div class="caption">${item.name} <span style="opacity:.6">${item.date}</span></div>`;
+  div.onclick = () => {
+    document.getElementById('lightboxImg').src = `images/${item.file}`;
+    document.getElementById('lightboxCaption').textContent = item.name;
+    document.getElementById('lightbox').classList.add('show');
+  };
+  grid.appendChild(div);
+});
+
+// Nav active state on scroll
+const navLinks = document.querySelectorAll('.nav a[href^="#step"]');
+window.addEventListener('scroll', () => {
+  let current = '';
+  document.querySelectorAll('.item[id]').forEach(item => {
+    const rect = item.getBoundingClientRect();
+    if (rect.top <= 200) current = item.id;
+  });
+  navLinks.forEach(a => { a.classList.toggle('active', a.getAttribute('href') === `#${current}`); });
+});
+
+// ESC to close lightbox
+document.addEventListener('keydown', e => { if(e.key==='Escape') document.getElementById('lightbox').classList.remove('show'); });
+</script>
+
+</body>
+</html>
